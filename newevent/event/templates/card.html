@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Credit Card Management</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background-color: #343a40;
+        color: #fff;
+        z-index: 1000;
+        overflow-y: auto;
+      }
+
+      .sidebar h3 {
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .sidebar .nav-link {
+        color: #adb5bd;
+        padding: 10px 20px;
+        text-decoration: none;
+        display: block;
+      }
+
+      .sidebar .nav-link:hover {
+        background-color: #495057;
+        color: #fff;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        transition: margin-left 0.3s ease-in-out;
+      }
+
+      .topbar {
+        background-color: #fff;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .topbar button {
+        border: none;
+        background: none;
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      .topbar button i {
+        color: #495057;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 100%;
+          transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+      }
+
+      #cardForm,
+      #editCardForm {
+        display: none;
+      }
+
+      /* .form-control {
+        width: 50%!important;
+      } */
+
+      .form-control {
+        width: 50% !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar" id="sidebar">
+      <div class="d-flex flex-column align-items-center mt-4">
+        <h3 class="text-white">Admin Panel</h3>
+      </div>
+      <nav class="nav flex-column mt-3">
+        <a class="nav-link" href="/eventss">Events</a>
+        <a class="nav-link" href="/cardss">Credit Card</a>
+        <a class="nav-link" href="/accountslist">Accounts</a>
+        <a
+          class="nav-link"
+          href="#"
+          onclick="document.getElementById('logoutForm').submit()"
+          >Log Out</a
+        >
+
+        <form
+          id="logoutForm"
+          action="/logout"
+          method="POST"
+          style="display: none"
+        >
+          {{ form.csrf_token }}
+          <!-- Include CSRF token if needed -->
+        </form>
+      </nav>
+    </div>
+
+    <div class="main-content">
+      <div class="topbar">
+        <h4>Dashboard</h4>
+      </div>
+
+      <div class="container mt-4">
+        <h2>Credit Card Management</h2>
+
+        <button class="btn btn-primary" id="toggleFormBtn">
+          Add a Credit Card
+        </button>
+
+        <!-- Add Card Form -->
+        <div id="cardForm" class="mt-4">
+          <h4>Add Credit Card</h4>
+          <form id="addCardForm" action="/add_card" method="POST">
+            {{ form.csrf_token }}
+            <div class="mb-3">
+              <label for="cardNumber" class="form-label">Card Number</label>
+              <input
+                type="text"
+                class="form-control"
+                id="cardNumber"
+                name="number"
+                placeholder="1234 5678 9012 3456"
+                maxlength="19"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="expirationDate" class="form-label"
+                >Expiration Date</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="expirationDate"
+                name="expiry"
+                placeholder="MM/YY"
+                maxlength="5"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="cvv" class="form-label">CVV</label>
+              <input
+                type="text"
+                class="form-control"
+                id="cvv"
+                name="cvv"
+                placeholder="123"
+                maxlength="3"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              Add Card
+            </button>
+          </form>
+        </div>
+
+        <!-- Edit Card Form -->
+        <div id="editCardForm" class="mt-4">
+          <h4>Edit Credit Card</h4>
+          <form id="editCardFormSubmit" action="/update_card" method="POST">
+            {{ form.csrf_token }}
+            <input type="hidden" name="_method" value="PUT" />
+            <input type="hidden" name="card_id" id="editCardIdField" />
+
+            <div class="mb-3">
+              <label for="editCardNumber" class="form-label">Card Number</label>
+              <input
+                type="text"
+                class="form-control"
+                id="editCardNumber"
+                name="number"
+                placeholder="1234 5678 9012 3456"
+                maxlength="19"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="editExpirationDate" class="form-label"
+                >Expiration Date</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="editExpirationDate"
+                name="expiry"
+                placeholder="MM/YY"
+                maxlength="5"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="editCvv" class="form-label">CVV</label>
+              <input
+                type="text"
+                class="form-control"
+                id="editCvv"
+                name="cvv"
+                placeholder="123"
+                maxlength="3"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Update Card</button>
+          </form>
+        </div>
+
+        <div class="mt-4">
+          <h4>Existing Credit Cards</h4>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Card Number</th>
+                <th>Expiration Date</th>
+                <th>CVV</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for card in cards %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ card.number }}</td>
+                <td>{{ card.expiry }}</td>
+                <td>{{ card.cvv }}</td>
+                <td>
+                  <form
+                    action="/delete_card"
+                    method="POST"
+                    style="display: inline"
+                  >
+                    {{ form.csrf_token }}
+                    <input type="hidden" name="card_id" value="{{ card.id }}" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                  </form>
+                  <button
+                    class="btn btn-warning"
+                    onclick="showEditForm('{{ card.id }}', '{{ card.number }}', '{{ card.expiry }}', '{{ card.cvv }}')"
+                  >
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      // $(document).ready(function () {
+      //   // Toggle form visibility for adding a new card
+      //   $("#toggleFormBtn").click(function () {
+      //     $("#cardForm").toggle();
+      //     $("#editCardForm").hide(); // Hide the edit form if open
+      //   });
+      // });
+
+      // // Function to show the edit form with the card's data
+      // function showEditForm(id, number, expiry, cvv) {
+      //   $("#editCardForm").show();
+      //   $("#cardForm").hide(); // Hide the add card form
+      //   $("#editCardNumber").val(number);
+      //   $("#editExpirationDate").val(expiry);
+      //   $("#editCvv").val(cvv);
+      //   $("#editCardIdField").val(id);
+      // }
+
+      function formatCardNumber(input) {
+        let value = input.value.replace(/\D/g, "");
+        let formattedValue = value.replace(/(\d{4})(?=\d)/g, "$1 ");
+        input.value = formattedValue;
+      }
+
+      function formatExpirationDate(input) {
+        let value = input.value.replace(/\D/g, "");
+        if (value.length >= 2) {
+          value = value.substring(0, 2) + "/" + value.substring(2, 4);
+        }
+        input.value = value;
+      }
+
+      function formatCVV(input) {
+        let value = input.value.replace(/\D/g, "").substring(0, 3);
+        input.value = value;
+      }
+
+      $(document).ready(function () {
+        $("#cardNumber").on("input", function () {
+          formatCardNumber(this);
+        });
+
+        $("#editCardNumber").on("input", function () {
+          formatCardNumber(this);
+        });
+
+        $("#expirationDate").on("input", function () {
+          formatExpirationDate(this);
+        });
+
+        $("#editExpirationDate").on("input", function () {
+          formatExpirationDate(this);
+        });
+
+        $("#cvv").on("input", function () {
+          formatCVV(this);
+        });
+
+        $("#editCvv").on("input", function () {
+          formatCVV(this);
+        });
+
+        $("#toggleFormBtn").click(function () {
+          $("#cardForm").toggle();
+          $("#editCardForm").hide();
+        });
+      });
+
+      function showEditForm(id, number, expiry, cvv) {
+        $("#editCardForm").show();
+        $("#cardForm").hide();
+        number = number.replace(/\s+/g, "");
+        $("#editCardNumber").val(number);
+        $("#editExpirationDate").val(expiry);
+        $("#editCvv").val(cvv);
+        $("#editCardIdField").val(id);
+      }
+    </script>
+  </body>
+</html>
